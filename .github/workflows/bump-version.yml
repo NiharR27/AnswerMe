@@ -87,6 +87,6 @@ jobs:
       - name: Create Release Using thomaseizinger/create-release
         uses: thomaseizinger/create-release@master
         with:
-          tag_name: v${{ github.event.inputs.versionType }} # Using the tag created in the previous job
-          body: "Release notes for version ${{ github.event.inputs.versionType }}"
+          tag_name: v${{ github.event.inputs.customVersion }}
+          body: "Release notes for version ${{ github.event.inputs.customVersion }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
