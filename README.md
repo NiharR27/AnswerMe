@@ -1,4 +1,5 @@
 # AnswerMe
+
 Your AI Assistant App 🤖✨
 
 AnswerMe is a React Native Expo app that integrates with OpenAI's GPT model to provide a seamless and intelligent chatbot experience. With a sleek Floating Action Button (FAB) for easy access, users can interact with ChatGPT to get instant answers, insights, and assistance on various topics. Perfect for personal use, productivity, or creating a unique AI-powered application.
@@ -15,8 +16,6 @@ Use Cases 📚
     Ask questions, solve problems, or brainstorm ideas.
     Provide instant assistance or support for specific niches like education, health, or travel.
     Build your own custom chatbot-powered mobile app.
-
-
 
 # Welcome to your Expo app 👋
 
