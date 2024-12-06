@@ -65,7 +65,7 @@ jobs:
           git config --global user.email "actions@github.com"
           git add .
           git commit -m "Bump version to $(node -p "require('./package.json').version")"
-          git push origin main  # Or the branch you want to push to
+          git push origin master
 
       - name: Create Git Tag
         run: |
