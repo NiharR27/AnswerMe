@@ -1,0 +1,74 @@
+name: Bump Version for Expo App
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionType:
+        description: "Version bump type (major, minor, patch)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+      customVersion:
+        description: "Custom version number (e.g., 1.2.3). Leave blank to auto-bump."
+        required: false
+        type: string
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: "22" # You can specify the Node.js version here
+
+      - name: Install Dependencies
+        run: |
+          yarn install  # Install dependencies using yarn
+
+      - name: Bump Version
+        run: |
+          VERSION_TYPE="${{ github.event.inputs.versionType }}"  # major, minor, patch
+          CUSTOM_VERSION="${{ github.event.inputs.customVersion }}"  # Custom version input from GitHub UI
+
+          if [ -z "$CUSTOM_VERSION" ]; then
+            echo "Bumping version as $VERSION_TYPE"
+            # Bump version in package.json using yarn
+            yarn version --$VERSION_TYPE --no-git-tag-version
+          else
+            echo "Setting custom version: $CUSTOM_VERSION"
+            # Set custom version in package.json using yarn
+            yarn version --new-version $CUSTOM_VERSION --no-git-tag-version
+          fi
+
+          # Optionally, bump version in app.json or app.config.js
+          # You can adjust this part based on your app configuration format (app.json or app.config.js)
+          node -e "
+            const fs = require('fs');
+            const path = './app.json';  // Change this if using app.config.js
+            const appJson = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const newVersion = require('./package.json').version;
+            appJson.expo.version = newVersion;
+            fs.writeFileSync(path, JSON.stringify(appJson, null, 2));
+          "
+
+      - name: Commit Version Bump
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Bump version to $(node -p "require('./package.json').version")"
+          git push origin main  # Or the branch you want to push to
+
+      - name: Create Git Tag
+        run: |
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          git tag "v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"

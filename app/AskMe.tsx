@@ -10,7 +10,6 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
-  ScrollView,
   LayoutAnimation, // Import to handle smooth animation
 } from "react-native";
 
@@ -21,7 +20,7 @@ interface ChatMessage {
   content: string;
 }
 
-const ChatGPTMockup: React.FC = () => {
+const AskMe: React.FC = () => {
   const [userInput, setUserInput] = useState<string>("");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
@@ -198,4 +197,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatGPTMockup;
+export default AskMe;
