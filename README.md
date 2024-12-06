@@ -17,7 +17,7 @@ Use Cases 📚
     Provide instant assistance or support for specific niches like education, health, or travel.
     Build your own custom chatbot-powered mobile app.
 
-# Welcome to your Expo app 👋
+# How to get started? 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
