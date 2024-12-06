@@ -13,12 +13,35 @@ import {
   LayoutAnimation, // Import to handle smooth animation
 } from "react-native";
 
-// Define types for the chat history item
 interface ChatMessage {
   id: string;
   role: "user" | "gpt";
   content: string;
 }
+
+const fetchChatGPTResponse = async (message: string) => {
+  if (!message.trim()) return "Please provide a valid message!";
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer YOUR_OPENAI_API_KEY`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: message }],
+      }),
+    });
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error(error);
+    return "Something went wrong!";
+  }
+};
 
 const AskMe: React.FC = () => {
   const [userInput, setUserInput] = useState<string>("");
@@ -52,11 +75,13 @@ const AskMe: React.FC = () => {
     };
   }, []);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!userInput.trim()) return;
 
     // Mock GPT Response (Replace this with your API integration later)
     const mockResponse = `GPT Response to: "${userInput}"`;
+
+    // const response = await fetchChatGPTResponse(userInput);
 
     // Update chat history with proper types
     setChatHistory((prev) => [
