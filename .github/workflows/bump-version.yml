@@ -1,4 +1,4 @@
-name: Bump Version for Expo App
+name: Bump Version and Create Release for Expo App
 
 on:
   workflow_dispatch:
@@ -24,19 +24,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4.1.0
+      - name: Set up Node.js (Version 22)
+        uses: actions/setup-node@v4
         with:
-          node-version: "22" # You can specify the Node.js version here
+          node-version: "22"
 
       - name: Install Dependencies
         run: |
-          yarn install  # Install dependencies using yarn
+          yarn install
 
       - name: Bump Version
         run: |
-          VERSION_TYPE="${{ github.event.inputs.versionType }}"  # major, minor, patch
-          CUSTOM_VERSION="${{ github.event.inputs.customVersion }}"  # Custom version input from GitHub UI
+          VERSION_TYPE="${{ github.event.inputs.versionType }}"
+          CUSTOM_VERSION="${{ github.event.inputs.customVersion }}"
 
           if [ -z "$CUSTOM_VERSION" ]; then
             echo "Bumping version as $VERSION_TYPE"
@@ -49,7 +49,6 @@ jobs:
           fi
 
           # Optionally, bump version in app.json or app.config.js
-          # You can adjust this part based on your app configuration format (app.json or app.config.js)
           node -e "
             const fs = require('fs');
             const path = './app.json';  // Change this if using app.config.js
@@ -71,4 +70,23 @@ jobs:
         run: |
           NEW_VERSION=$(node -p "require('./package.json').version")
           git tag "v$NEW_VERSION"
-          git push origin "v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"  # Push the tag to trigger the release
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: bump-version
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (Version 20 for the create-release action)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Create Release Using thomaseizinger/create-release
+        uses: thomaseizinger/create-release@master
+        with:
+          tag_name: v${{ needs.bump-version.outputs.new_version }} # Using the tag created in the previous job
+          body: "Release notes for version ${{ needs.bump-version.outputs.new_version }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
