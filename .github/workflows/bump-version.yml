@@ -82,11 +82,11 @@ jobs:
       - name: Set up Node.js (Version 20 for the create-release action)
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Create Release Using thomaseizinger/create-release
         uses: thomaseizinger/create-release@master
         with:
-          tag_name: v${{ needs.bump-version.outputs.new_version }} # Using the tag created in the previous job
-          body: "Release notes for version ${{ needs.bump-version.outputs.new_version }}"
+          tag_name: v${{ github.event.inputs.versionType }} # Using the tag created in the previous job
+          body: "Release notes for version ${{ github.event.inputs.versionType }}"
           github_token: ${{ secrets.GITHUB_TOKEN }}
