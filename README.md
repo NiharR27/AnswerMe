@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # AnswerMe
 Your AI Assistant App 🤖✨
 
