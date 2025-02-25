@@ -8,7 +8,7 @@ on:
         required: true
         default: "1.0.0"
       release_notes_link:
-        description: "Fibery link for release notes"
+        description: "Fibery release notes"
         required: true
         default: "https://your-fibery-link.com"
 
