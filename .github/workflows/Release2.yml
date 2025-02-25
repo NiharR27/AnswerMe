@@ -36,8 +36,6 @@ jobs:
           body: |
             ## Release Version ${{ env.RELEASE_VERSION }}
 
-            👤 **Created by:** @${{ github.event.pull_request.user.login }}
-
             📝 **Fibery Release Notes:** [View here](${{ env.FIBERY_RELEASE_NOTES }})
 
             🔗 **Merged PR:** [View Pull Request](${{ github.event.pull_request.html_url }})
