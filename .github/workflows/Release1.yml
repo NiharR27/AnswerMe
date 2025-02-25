@@ -44,9 +44,9 @@ jobs:
           # Update app.json: bump version, increment buildNumber and versionCode
           if [ -f app.json ]; then
             jq --arg v "$VERSION" '
-              .version = $v |
-              .ios.buildNumber = ( .ios.buildNumber | tonumber + 1 | tostring ) |
-              .android.versionCode += 1
+              .expo.version = $v |
+              .expo.ios.buildNumber = ( .expo.ios.buildNumber | tonumber + 1 | tostring ) |
+              .expo.android.versionCode += 1
             ' app.json > app.tmp.json && mv app.tmp.json app.json
           fi
 
