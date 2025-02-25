@@ -24,7 +24,7 @@ jobs:
       - name: Extract Fibery Release Notes from PR Description 📝
         run: |
           FIBERY_URL=$(echo "${{ github.event.pull_request.body }}" | grep -oP '(?<=\*\*Fibery Release Notes:\*\* \[View here]\().*(?=\))' || echo "No Fibery Release Notes link provided")
-          echo "FIBERY_RELEASE_NOTES=$JIRA_URL" >> $GITHUB_ENV
+          echo "FIBERY_RELEASE_NOTES=$FIBERY_URL" >> $GITHUB_ENV
 
       - name: Create Release 🎉
         uses: thomaseizinger/create-release@2.0.0
