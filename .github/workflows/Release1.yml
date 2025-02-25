@@ -1,0 +1,85 @@
+name: "Release 1 - Initial New Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version you want to release."
+        required: true
+        default: "1.0.0"
+
+jobs:
+  draft-new-release:
+    name: "Draft a new release"
+    runs-on: ubuntu-latest
+    steps:
+      #   - uses: actions/create-github-app-token@v1
+      #     id: app-token
+      #     with:
+      #       app-id: ${{ vars.VERSION_BUMPER_APPID }}
+      #       private-key: ${{ secrets.VERSION_BUMPER_SECRET }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize mandatory git config 👶
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email noreply@github.com
+
+      - name: Checkout develop branch 👮
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: develop
+          # token: ${{ steps.app-token.outputs.token }}
+
+      - name: Bump version in package.json and app.json 🔨
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+
+          # Update package.json
+          yarn version --new-version $VERSION --no-git-tag-version
+
+          # Update app.json: bump version, increment buildNumber and versionCode
+          if [ -f app.json ]; then
+            jq --arg v "$VERSION" '
+              .expo.version = $v |
+              .expo.ios.buildNumber = ( .expo.ios.buildNumber | tonumber + 1 | tostring ) |
+              .expo.android.versionCode += 1
+            ' app.json > app.tmp.json && mv app.tmp.json app.json
+          fi
+
+      - name: Commit manifest files ✏️
+        id: make-commit
+        run: |
+          git add package.json app.json
+          git commit --allow-empty --message "Bump version to ${{ github.event.inputs.version }}"
+
+      - name: Push develop branch 🥶
+        run: git push origin develop
+
+      - name: Create and push release branch 🔥
+        run: |
+          git checkout -b release/${{ github.event.inputs.version }} develop
+          git push origin release/${{ github.event.inputs.version }}
+
+      - name: Create pull request to master 🚀
+        uses: thomaseizinger/create-pull-request@1.4.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          head: release/${{ github.event.inputs.version }}
+          base: master
+          title: Release version ${{ github.event.inputs.version }}
+          # team_reviewers: | Assign the PR to a team of reviewers (optional)
+          #   developers
+          #   qa-team
+          body: |
+            Hi @${{ github.actor }}!
+
+            This PR was created in response to a manual trigger of the release workflow here: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+            I've bumped the versions in the manifest files in this commit: ${{ steps.make-commit.outputs.commit }}.
+
+            Merging this PR to master will trigger an action to release and publish the new version (check `Release-2-Publish-new-release.yml` for more information).
+
+            Happy merging! GLHF! 🚀🙂️‍🔥

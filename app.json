@@ -2,16 +2,18 @@
   "expo": {
     "name": "AnswerMe",
     "slug": "AnswerMe",
-    "version": "1.0.8",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "buildNumber": "6",
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 52,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
