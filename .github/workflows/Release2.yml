@@ -21,6 +21,11 @@ jobs:
           VERSION=$(node -e "console.log(require('./package.json').version)")
           echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
 
+      - name: Extract Fibery Release Notes from PR Description 📝
+        run: |
+          FIBERY_URL=$(echo "${{ github.event.pull_request.body }}" | grep -oP '(?<=\*\*Fibery Release Notes:\*\* \[View here]\().*(?=\))' || echo "No Fibery Release Notes link provided")
+          echo "FIBERY_RELEASE_NOTES=$JIRA_URL" >> $GITHUB_ENV
+
       - name: Create Release 🎉
         uses: thomaseizinger/create-release@2.0.0
         with:
@@ -28,5 +33,11 @@ jobs:
           target_commitish: ${{ github.event.pull_request.merge_commit_sha }}
           tag_name: ${{ env.RELEASE_VERSION }}
           name: ${{ env.RELEASE_VERSION }}
+          body: |
+            ## Release Version ${{ env.RELEASE_VERSION }}
+
+            **Fibery Release Notes:** [View here](${{ env.FIBERY_RELEASE_NOTES }})
+
+            _This release was automatically created by GitHub Actions._
           draft: false
           prerelease: false
