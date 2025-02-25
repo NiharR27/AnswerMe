@@ -38,6 +38,8 @@ jobs:
 
             **Fibery Release Notes:** [View here](${{ env.FIBERY_RELEASE_NOTES }})
 
+            🔗 **Merged PR:** [View Pull Request](${{ github.event.pull_request.html_url }})
+
             _This release was automatically created by GitHub Actions._
           draft: false
           prerelease: false
