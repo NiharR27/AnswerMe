@@ -44,7 +44,7 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           # Update package.json version using yarn
-          yarn version $VERSION --immediate
+          jq --arg v "$VERSION" '.version = $v' package.json > package.tmp.json && mv package.tmp.json package.json
           # Update app.json if it exists: bump version, increment iOS buildNumber and Android versionCode
           if [ -f app.json ]; then
             jq --arg v "$VERSION" '
