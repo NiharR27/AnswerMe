@@ -36,7 +36,7 @@ jobs:
           VERSION="${{ github.event.inputs.version }}"
 
           # Update package.json
-          yarn version --new-version $VERSION --no-git-tag-version
+          yarn version $VERSION --immediate
 
           # Update app.json: bump version, increment buildNumber and versionCode
           if [ -f app.json ]; then
