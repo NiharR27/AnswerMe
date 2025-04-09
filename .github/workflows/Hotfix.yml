@@ -89,7 +89,20 @@ jobs:
           git rebase --onto master hotfix/${{ github.event.inputs.version }} $RELEASE_BRANCH
           git push --force origin $RELEASE_BRANCH
 
+      - name: Check Diff between master and release branch
+        id: diff-check
+        run: |
+          DIFF=$(git diff master...HEAD)
+          if [ -z "$DIFF" ]; then
+            echo "No difference between master and release branch."
+            echo "::set-output name=diff_empty::true"
+          else
+            echo "Differences detected."
+            echo "::set-output name=diff_empty::false"
+          fi
+
       - name: Create Pull Request to master
+        if: steps.diff-check.outputs.diff_empty != 'true'
         uses: thomaseizinger/create-pull-request@1.4.0
         id: pr-master
         with:
