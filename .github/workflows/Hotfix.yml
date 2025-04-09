@@ -1,4 +1,4 @@
-name: "Hotfix Release - Cherry Pick from Bugfix"
+name: "Hotfix Release - Cherry Pick from Bugfix (Base: develop)"
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
         required: true
         default: "https://your-release-notes-link.com"
       commit_sha:
-        description: "The commit SHA from the bugfix branch (in develop) to cherry-pick."
+        description: "The commit SHA from the bugfix branch (in develop) to cherry-pick if needed."
         required: true
         default: ""
 
@@ -21,10 +21,10 @@ jobs:
     name: "Create and Propagate Hotfix"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout master Branch
+      - name: Checkout develop Branch
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: develop
           fetch-depth: 0
 
       - name: Setup Git Config
@@ -32,19 +32,21 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
 
-      - name: Create Hotfix Branch and Cherry-pick Commit
+      - name: Create Hotfix Branch
         run: |
           HOTFIX_BRANCH="hotfix/${{ github.event.inputs.version }}"
-          echo "Creating branch $HOTFIX_BRANCH from master..."
+          echo "Creating branch $HOTFIX_BRANCH from develop..."
           git checkout -b $HOTFIX_BRANCH
-          echo "Cherry picking commit ${{ github.event.inputs.commit_sha }}..."
-          git cherry-pick -m 1 ${{ github.event.inputs.commit_sha }}
+          # If you need to cherry-pick a commit that isn’t already in develop,
+          # uncomment the following lines:
+          # echo "Cherry picking commit ${{ github.event.inputs.commit_sha }}..."
+          # git cherry-pick -m 1 ${{ github.event.inputs.commit_sha }}
 
       - name: Bump Version in package.json and app.json
         run: |
           VERSION="${{ github.event.inputs.version }}"
 
-          # Update package.json version using yarn
+          # Update package.json version using jq
           jq --arg v "$VERSION" '.version = $v' package.json > package.tmp.json && mv package.tmp.json package.json
 
           # Update app.json if it exists: bump version, increment iOS buildNumber and Android versionCode
@@ -60,7 +62,7 @@ jobs:
         id: make-commit
         run: |
           git add package.json app.json
-          git commit --allow-empty --message "Hotfix: Bump version to ${{ github.event.inputs.version }} after cherry-pick"
+          git commit --allow-empty --message "Hotfix: Bump version to ${{ github.event.inputs.version }} after update"
 
       - name: Push Hotfix Branch
         run: git push origin hotfix/${{ github.event.inputs.version }}
@@ -75,7 +77,8 @@ jobs:
           title: "Hotfix Release ${{ github.event.inputs.version }}"
           reviewers: ${{ github.actor }}
           body: |
-            This hotfix release was created by cherry-picking commit `${{ github.event.inputs.commit_sha }}` from the bugfix branch.
+            This hotfix release was created from the develop branch.
+            It includes the necessary fixes and a version bump.
 
             **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
 
@@ -91,7 +94,7 @@ jobs:
           title: "Propagate Hotfix ${{ github.event.inputs.version }} to develop"
           reviewers: ${{ github.actor }}
           body: |
-            This PR propagates the hotfix changes to develop.
+            This PR propagates the hotfix version bump changes (if any) back into develop.
 
             **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
 
