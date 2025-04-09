@@ -104,7 +104,7 @@ const AskMe: React.FC = () => {
           <Text style={styles.title}>Welcome to ChatEase 🤖</Text>
           <Text style={styles.subtitle}>
             Type your questions below. Note: History will be cleared when you
-            leave the app. Thanks :)
+            leave the app. Thanks!!
           </Text>
 
           {/* Chat List */}
