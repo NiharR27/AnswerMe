@@ -79,7 +79,7 @@ const AskMe: React.FC = () => {
     if (!userInput.trim()) return;
 
     // Mock GPT Response (Replace this with your API integration later)
-    const mockResponse = `GPT Response to: "${userInput}"`;
+    const mockResponse = `GPT Response to prompt: "${userInput}"`;
 
     // const response = await fetchChatGPTResponse(userInput);
 
