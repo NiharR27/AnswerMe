@@ -1,4 +1,4 @@
-name: "Hotfix Release - Cherry Pick from Bugfix (Base: develop)"
+name: "Hotfix Release - Rebasing Hotfix from Develop onto Master"
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
         required: true
         default: "https://your-release-notes-link.com"
       commit_sha:
-        description: "The commit SHA from the bugfix branch (in develop) to cherry-pick if needed."
+        description: "The commit SHA from the bugfix branch (if needed)."
         required: true
         default: ""
 
@@ -32,12 +32,12 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
 
-      - name: Create Hotfix Branch
+      - name: Create Hotfix Branch from develop
         run: |
           HOTFIX_BRANCH="hotfix/${{ github.event.inputs.version }}"
           echo "Creating branch $HOTFIX_BRANCH from develop..."
           git checkout -b $HOTFIX_BRANCH
-          # If you need to cherry-pick a commit that isn’t already in develop,
+          # Optionally, if you need to apply a commit that isn't in develop,
           # uncomment the following lines:
           # echo "Cherry picking commit ${{ github.event.inputs.commit_sha }}..."
           # git cherry-pick -m 1 ${{ github.event.inputs.commit_sha }}
@@ -45,10 +45,8 @@ jobs:
       - name: Bump Version in package.json and app.json
         run: |
           VERSION="${{ github.event.inputs.version }}"
-
           # Update package.json version using jq
           jq --arg v "$VERSION" '.version = $v' package.json > package.tmp.json && mv package.tmp.json package.json
-
           # Update app.json if it exists: bump version, increment iOS buildNumber and Android versionCode
           if [ -f app.json ]; then
             jq --arg v "$VERSION" '
@@ -59,30 +57,12 @@ jobs:
           fi
 
       - name: Commit Version Bump Changes
-        id: make-commit
         run: |
           git add package.json app.json
-          git commit --allow-empty --message "Hotfix: Bump version to ${{ github.event.inputs.version }} after update"
+          git commit --allow-empty --message "Hotfix: Bump version to $VERSION after update"
 
-      - name: Push Hotfix Branch
+      - name: Push Hotfix Branch to Origin
         run: git push origin hotfix/${{ github.event.inputs.version }}
-
-      - name: Create Pull Request to master
-        uses: thomaseizinger/create-pull-request@1.4.0
-        id: pr-master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          head: hotfix/${{ github.event.inputs.version }}
-          base: master
-          title: "Hotfix Release ${{ github.event.inputs.version }}"
-          reviewers: ${{ github.actor }}
-          body: |
-            This hotfix release was created from the develop branch.
-            It includes the necessary fixes and a version bump.
-
-            **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
-
-            Merging this PR into master will deploy the hotfix.
 
       - name: Create Pull Request to develop
         uses: thomaseizinger/create-pull-request@1.4.0
@@ -94,8 +74,29 @@ jobs:
           title: "Propagate Hotfix ${{ github.event.inputs.version }} to develop"
           reviewers: ${{ github.actor }}
           body: |
-            This PR propagates the hotfix version bump changes (if any) back into develop.
-
+            This PR propagates the hotfix (including version bump changes) into develop.
             **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
 
-            Please merge this PR to keep develop in sync with the hotfix release.
+      - name: Create Hotfix Release Branch for Master
+        run: |
+          RELEASE_BRANCH="hotfix/${{ github.event.inputs.version }}-release"
+          echo "Creating release branch $RELEASE_BRANCH from hotfix/${{ github.event.inputs.version }}..."
+          git checkout -b $RELEASE_BRANCH
+          echo "Rebasing $RELEASE_BRANCH onto master..."
+          git rebase --onto master hotfix/${{ github.event.inputs.version }} $RELEASE_BRANCH
+          git push --force origin $RELEASE_BRANCH
+
+      - name: Create Pull Request to master
+        uses: thomaseizinger/create-pull-request@1.4.0
+        id: pr-master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          head: hotfix/${{ github.event.inputs.version }}-release
+          base: master
+          title: "Hotfix Release ${{ github.event.inputs.version }}"
+          reviewers: ${{ github.actor }}
+          body: |
+            This hotfix release branch was rebased onto master so that only the necessary hotfix changes
+            (with version bump updates) are applied to master.
+            **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
+            Merging this PR into master will deploy the hotfix.
