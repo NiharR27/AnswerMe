@@ -1,4 +1,4 @@
-name: 'Hotfix Release - Cherry Pick from Bugfix'
+name: "Hotfix Release - Cherry Pick from Bugfix"
 
 on:
   workflow_dispatch:
@@ -6,15 +6,15 @@ on:
       version:
         description: "The hotfix version to release (e.g., 1.0.1)."
         required: true
-        default: '1.0.1'
+        default: "1.0.1"
       release_notes_link:
         description: "Link to the Fibery release notes for the hotfix."
         required: true
-        default: 'https://your-release-notes-link.com'
+        default: "https://your-release-notes-link.com"
       commit_sha:
         description: "The commit SHA from the bugfix branch (in develop) to cherry-pick."
         required: true
-        default: ''
+        default: ""
 
 jobs:
   hotfix-release:
@@ -43,14 +43,16 @@ jobs:
       - name: Bump Version in package.json and app.json
         run: |
           VERSION="${{ github.event.inputs.version }}"
+
           # Update package.json version using yarn
           jq --arg v "$VERSION" '.version = $v' package.json > package.tmp.json && mv package.tmp.json package.json
+
           # Update app.json if it exists: bump version, increment iOS buildNumber and Android versionCode
           if [ -f app.json ]; then
             jq --arg v "$VERSION" '
-              .version = $v |
-              .ios.buildNumber = ( .ios.buildNumber | tonumber + 1 | tostring ) |
-              .android.versionCode += 1
+              .expo.version = $v |
+              .expo.ios.buildNumber = ( .expo.ios.buildNumber | tonumber + 1 | tostring ) |
+              .expo.android.versionCode += 1
             ' app.json > app.tmp.json && mv app.tmp.json app.json
           fi
 
@@ -74,11 +76,11 @@ jobs:
           reviewers: ${{ github.actor }}
           body: |
             This hotfix release was created by cherry-picking commit `${{ github.event.inputs.commit_sha }}` from the bugfix branch.
-            
+
             **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
-            
+
             Merging this PR into master will deploy the hotfix.
-      
+
       - name: Create Pull Request to develop
         uses: thomaseizinger/create-pull-request@1.4.0
         id: pr-develop
@@ -90,7 +92,7 @@ jobs:
           reviewers: ${{ github.actor }}
           body: |
             This PR propagates the hotfix changes to develop.
-            
+
             **Fibery Release Notes:** [View here](${{ github.event.inputs.release_notes_link }})
-            
+
             Please merge this PR to keep develop in sync with the hotfix release.
