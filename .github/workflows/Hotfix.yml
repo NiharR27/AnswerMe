@@ -38,7 +38,7 @@ jobs:
           echo "Creating branch $HOTFIX_BRANCH from master..."
           git checkout -b $HOTFIX_BRANCH
           echo "Cherry picking commit ${{ github.event.inputs.commit_sha }}..."
-          git cherry-pick ${{ github.event.inputs.commit_sha }}
+          git cherry-pick -m 1 ${{ github.event.inputs.commit_sha }}
 
       - name: Bump Version in package.json and app.json
         run: |
