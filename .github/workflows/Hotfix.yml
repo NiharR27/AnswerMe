@@ -37,7 +37,7 @@ jobs:
           HOTFIX_BRANCH="hotfix/${{ github.event.inputs.version }}"
           echo "Creating branch $HOTFIX_BRANCH from develop..."
           git checkout -b $HOTFIX_BRANCH
-          # Optionally, if you need to apply a commit that isn't in develop,
+          # Optionally, if you need to apply a commit that isn't already in develop,
           # uncomment the following lines:
           # echo "Cherry picking commit ${{ github.event.inputs.commit_sha }}..."
           # git cherry-pick -m 1 ${{ github.event.inputs.commit_sha }}
@@ -62,7 +62,8 @@ jobs:
           git commit --allow-empty --message "Hotfix: Bump version to $VERSION after update"
 
       - name: Push Hotfix Branch to Origin
-        run: git push origin hotfix/${{ github.event.inputs.version }}
+        run: |
+          git push origin hotfix/${{ github.event.inputs.version }}
 
       - name: Create Pull Request to develop
         uses: thomaseizinger/create-pull-request@1.4.0
@@ -82,6 +83,8 @@ jobs:
           RELEASE_BRANCH="hotfix/${{ github.event.inputs.version }}-release"
           echo "Creating release branch $RELEASE_BRANCH from hotfix/${{ github.event.inputs.version }}..."
           git checkout -b $RELEASE_BRANCH
+          echo "Fetching master branch..."
+          git fetch origin master:master
           echo "Rebasing $RELEASE_BRANCH onto master..."
           git rebase --onto master hotfix/${{ github.event.inputs.version }} $RELEASE_BRANCH
           git push --force origin $RELEASE_BRANCH
